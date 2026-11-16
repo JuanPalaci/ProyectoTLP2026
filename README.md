@@ -1,56 +1,53 @@
-# Compilador de mini-C: lexer y analizador semántico
+# Analizador léxico y semántico de mini-C
 
-Proyecto TLP02-2026 (Teoría de Lenguajes de Programación). La **Fase 1** consiste en un **analizador léxico**
-y un **analizador semántico** para un subconjunto de **C** (mini-C). El parser para el español es de la Fase 2.
+Proyecto de Teoría de Lenguajes de Programación (TLP02-2026), Fase 1: analizador léxico y analizador semántico para un subconjunto de C (**mini-C**).
 
+```text
+int total = base @ 2;        ->   ERROR línea 4, col 18: Carácter inválido '@'     (fase léxica)
+int n = "hola";              ->   ERROR semantico línea 3, col 1: No se puede asignar un cadena a una variable int
 ```
-int total = base @ 2;        ->   ERROR línea 4, col 18: Carácter inválido '@'     (lo detecta el lexer)
-int n = "hola";              ->   error semántico: no se puede guardar una cadena en un int
-```
 
-## Equipo
+## Integrantes
 
-| Rol | Nombre | Módulo |
-|---|---|---|
-| P1 | Juan Carlos Sibrian | Analizador léxico, especificación de tokens y corpus de pruebas |
-| P2 | Kattia Sarai Santan Soriano | Representación mínima (AST) para el semántico y reflexión sobre CFG |
-| P3 | Fabio Mijango | Analizador semántico: tabla de símbolos, ámbitos, declaración y redeclaración |
-| P4 | Gabriela Sofia Quinteros Ramirez | Reglas de tipos y casos de prueba semánticos |
-| P5 | Oscar Ernesto Menjivar Ayala | Ejecutor de pruebas, README, video y entrega |
+| Nombre | Área |
+|---|---|
+| Juan Carlos Sibrian | Analizador léxico, especificación de tokens y corpus de pruebas |
+| Kattia Sarai Santan Soriano | Representación AST y convertidor de tokens a AST |
+| Fabio Mijango | Analizador semántico, tabla de símbolos y manejo de ámbitos |
+| Gabriela Sofia Quinteros Ramirez | Reglas de tipos y casos de prueba semánticos |
+| Oscar Ernesto Menjivar Ayala | Ejecutor de pruebas e integración |
 
 ## El lenguaje
 
-Un subconjunto de C: tipos `int`, `float` y `char`; declaraciones y asignaciones; aritmética; comparaciones;
-operadores lógicos `&&` `||` `!`; `if/else`, `while`, bloques con ámbito; `printf`; y comentarios `//` y `/* */`.
-Un programa es una secuencia de sentencias (sin `main` ni funciones propias). El detalle y las reglas semánticas
-(S1 a S10) están en [docs/lenguaje_c.md](docs/lenguaje_c.md).
+Mini-C cubre un subconjunto de C con tipos `int`, `float` y `char`; declaraciones con o sin valor inicial; asignaciones; operadores aritméticos (`+`, `-`, `*`, `/`, `%`), relacionales (`<`, `>`, `<=`, `>=`, `==`, `!=`) y lógicos (`&&`, `||`, `!`); estructuras `if`/`else` y `while`; bloques con ámbito propio `{ ... }`; `printf`; y comentarios `//` y `/* */`. Un programa es una secuencia de sentencias (sin `main` ni funciones definidas por el usuario).
+
+El detalle del lenguaje, las reglas semánticas (S1 a S10) y la especificación formal de tokens están en [docs/lenguaje_c.md](docs/lenguaje_c.md) y [docs/tokens.md](docs/tokens.md).
 
 ## Estructura del repositorio
 
-```
+```text
 ProyectoTLP2026/
-├── lexer/          lexer.py: analizador léxico (P1)
-├── semantico/      semantico.py, tabla_simbolos.py y tipos.py: analizador semántico, tabla de símbolos y reglas de tipos (P3 y P4)
-├── parser/         nodo.py (AST mínimo) y convertidor.py (tokens a AST) que consume el semántico (P2)
-├── pruebas/        ejecutor.py, pruebas unitarias (test_*.py) y el corpus de programas .c (ejemplos/validos, ejemplos/invalidos, ejemplos/ast)
-├── docs/           especificación de tokens, lenguaje mini-C y contratos entre módulos
-├── CONTRIBUTING.md     cómo trabajamos con Git (leer antes de empezar)
+├── lexer/          analizador léxico (lexer.py) y ejemplo de salida JSON
+├── parser/         representación AST (nodo.py) y convertidor de tokens a AST (convertidor.py)
+├── semantico/      analizador semántico (semantico.py), tabla de símbolos y reglas de tipos
+├── pruebas/        ejecutor del corpus (ejecutor.py), pruebas unitarias y programas .c de ejemplo
+├── docs/           especificación formal de tokens, definición de mini-C y contratos
+├── CONTRIBUTING.md guía de estilo y flujo de trabajo en Git
 └── README.md
 ```
 
 ## Cómo ejecutar
 
-Requisitos: Python 3.10 o superior. No hay dependencias externas en la Fase 1.
-Todos los comandos se corren desde la raíz del repositorio.
+Requisitos: **Python 3.10** o superior (sin dependencias externas). Todos los comandos se ejecutan desde la raíz del repositorio.
 
 ```sh
-# Analizador léxico: imprime los tokens y los errores léxicos, y crea salida/tokens.txt y salida/errores.txt
+# 1. Analizador léxico: imprime los tokens y errores léxicos, y genera salida/tokens.txt y salida/errores.txt
 python -m lexer.lexer pruebas/ejemplos/validos/ejemplo.c
 
-# AST de un programa (lo que recibe el semántico): imprime el árbol en JSON
+# 2. Convertidor de tokens a AST: imprime el árbol sintáctico en formato JSON
 python -m parser.convertidor pruebas/ejemplos/validos/ejemplo.c
 
-# Analizador semántico (P3 y P4): nombres, redeclaraciones, ámbitos y reglas de tipos
+# 3. Analizador semántico: recibe un .c o un AST en JSON; verifica ámbitos, declaraciones y tipos
 python -m semantico.semantico pruebas/ejemplos/validos/07_ambitos_y_bloques.c
 python -m semantico.semantico pruebas/ejemplos/invalidos/09_redeclaracion.c
 python -m semantico.semantico pruebas/ejemplos/invalidos/15_variable_fuera_de_su_ambito.c
@@ -59,34 +56,16 @@ python -m semantico.semantico pruebas/ejemplos/invalidos/11_float_en_int.c
 python -m semantico.semantico pruebas/ejemplos/invalidos/16_modulo_con_float.c
 python -m semantico.semantico pruebas/ejemplos/ast/08_variable_no_declarada.json
 
-# Ejecutor general del corpus: corre los 29 programas .c de extremo a extremo y verifica // ESPERADO
+# 4. Ejecutor del corpus: corre los 29 programas .c de extremo a extremo y valida // ESPERADO
 python -m pruebas.ejecutor
 
-# Suite completa de pruebas unitarias (lexer, AST, convertidor, semántico, tipos y ejecutor)
+# 5. Suite completa de pruebas unitarias
 python -m unittest discover pruebas
 ```
 
 ## Casos de prueba
 
-El corpus está en `pruebas/ejemplos/`: programas **válidos** que deben analizarse sin errores e **inválidos** que
-deben producir errores léxicos o semánticos claros, con línea y causa. La primera línea de cada programa declara lo
-esperado (`// ESPERADO: ok`, `// ESPERADO: error lexico linea 4`, `// ESPERADO: error semantico linea 3`). El ejecutor
-(`python -m pruebas.ejecutor`) verifica todos los casos automáticamente y el índice completo está en
-[pruebas/ejemplos/INDICE.md](pruebas/ejemplos/INDICE.md).
-
-## Estado de los módulos
-
-| Módulo | Responsable | Estado |
-|---|---|---|
-| Léxico y especificación de tokens | P1 | Listo |
-| Corpus de pruebas | P1 | Listo |
-| AST mínimo y convertidor de tokens a AST | P2 | Listo |
-| Semántico: tabla de símbolos y ámbitos | P3 | Listo |
-| Semántico: reglas de tipos | P4 | Listo |
-| Ejecutor de pruebas y README | P5 | Listo |
-| Video de la Fase 1 y entrega | P5 | Pendiente |
-
-(Actualizar esta tabla al unir cada módulo a `main`: Pendiente, En curso, Listo.)
+El corpus de pruebas se encuentra en `pruebas/ejemplos/` y consta de 11 programas **válidos** (`validos/`) y 18 **inválidos** (`invalidos/`) con errores léxicos o semánticos que indican línea y causa, además de AST de referencia en `pruebas/ejemplos/ast/`. La primera línea de cada archivo `.c` declara el resultado esperado (`// ESPERADO: ok`, `// ESPERADO: error lexico linea N` o `// ESPERADO: error semantico linea N`). El índice completo se consulta en [pruebas/ejemplos/INDICE.md](pruebas/ejemplos/INDICE.md).
 
 ## Reflexión: qué verificaciones no puede expresar una CFG
 
@@ -104,12 +83,8 @@ En los tres casos el programa es **sintácticamente correcto**: la gramática lo
 
 Esa frontera es la que se retoma en la Fase 2: en el español, la concordancia de género y número a distancia es otra dependencia de contexto que una CFG no puede expresar.
 
-## Video de la Fase 1
-
-_Enlace pendiente (máximo 10 minutos; lo sube P5)._
-
 ## Documentación
 
-- [Especificación formal de tokens](docs/tokens.md): expresiones regulares de cada token y errores léxicos.
-- [El lenguaje mini-C](docs/lenguaje_c.md): alcance y reglas semánticas S1 a S10.
-- [Contratos entre módulos](docs/contratos.md): formatos de token, error, AST, tabla de símbolos y funciones.
+- [Especificación formal de tokens](docs/tokens.md): expresiones regulares, autómata numérico y errores léxicos.
+- [El lenguaje mini-C](docs/lenguaje_c.md): alcance del lenguaje y reglas semánticas S1 a S10.
+- [Contratos entre módulos](docs/contratos.md): formatos de token, error, AST, tabla de símbolos y funciones públicas.
