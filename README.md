@@ -30,9 +30,9 @@ Un programa es una secuencia de sentencias (sin `main` ni funciones propias). El
 ```
 ProyectoTLP2026/
 ├── lexer/          lexer.py: analizador léxico (P1)
-├── semantico/      semantico.py: analizador semántico, tabla de símbolos y reglas de tipos (P3 y P4)
+├── semantico/      semantico.py, tabla_simbolos.py y tipos.py: analizador semántico, tabla de símbolos y reglas de tipos (P3 y P4)
 ├── parser/         nodo.py (AST mínimo) y convertidor.py (tokens a AST) que consume el semántico (P2)
-├── pruebas/        test_lexer.py, test_ast.py, test_convertidor.py, test_semantico.py y el corpus de programas .c (ejemplos/validos, ejemplos/invalidos)
+├── pruebas/        ejecutor.py, pruebas unitarias (test_*.py) y el corpus de programas .c (ejemplos/validos, ejemplos/invalidos, ejemplos/ast)
 ├── docs/           especificación de tokens, lenguaje mini-C y contratos entre módulos
 ├── CONTRIBUTING.md     cómo trabajamos con Git (leer antes de empezar)
 └── README.md
@@ -43,27 +43,35 @@ ProyectoTLP2026/
 Requisitos: Python 3.10 o superior. No hay dependencias externas en la Fase 1.
 Todos los comandos se corren desde la raíz del repositorio.
 
-```
+```sh
 # Analizador léxico: imprime los tokens y los errores léxicos, y crea salida/tokens.txt y salida/errores.txt
 python -m lexer.lexer pruebas/ejemplos/validos/ejemplo.c
-
-# Pruebas del lexer, del AST, del semántico y del corpus (deben terminar en OK)
-python -m unittest discover pruebas
 
 # AST de un programa (lo que recibe el semántico): imprime el árbol en JSON
 python -m parser.convertidor pruebas/ejemplos/validos/ejemplo.c
 
-# Analizador semántico P3: nombres, redeclaraciones y ámbitos
+# Analizador semántico (P3 y P4): nombres, redeclaraciones, ámbitos y reglas de tipos
 python -m semantico.semantico pruebas/ejemplos/validos/07_ambitos_y_bloques.c
 python -m semantico.semantico pruebas/ejemplos/invalidos/09_redeclaracion.c
 python -m semantico.semantico pruebas/ejemplos/invalidos/15_variable_fuera_de_su_ambito.c
+python -m semantico.semantico pruebas/ejemplos/invalidos/10_cadena_en_entero.c
+python -m semantico.semantico pruebas/ejemplos/invalidos/11_float_en_int.c
+python -m semantico.semantico pruebas/ejemplos/invalidos/16_modulo_con_float.c
+python -m semantico.semantico pruebas/ejemplos/ast/08_variable_no_declarada.json
+
+# Ejecutor general del corpus: corre los 29 programas .c de extremo a extremo y verifica // ESPERADO
+python -m pruebas.ejecutor
+
+# Suite completa de pruebas unitarias (lexer, AST, convertidor, semántico, tipos y ejecutor)
+python -m unittest discover pruebas
 ```
 
 ## Casos de prueba
 
 El corpus está en `pruebas/ejemplos/`: programas **válidos** que deben analizarse sin errores e **inválidos** que
 deben producir errores léxicos o semánticos claros, con línea y causa. La primera línea de cada programa declara lo
-esperado (`// ESPERADO: ok`, `// ESPERADO: error lexico linea 4`). El índice completo está en
+esperado (`// ESPERADO: ok`, `// ESPERADO: error lexico linea 4`, `// ESPERADO: error semantico linea 3`). El ejecutor
+(`python -m pruebas.ejecutor`) verifica todos los casos automáticamente y el índice completo está en
 [pruebas/ejemplos/INDICE.md](pruebas/ejemplos/INDICE.md).
 
 ## Estado de los módulos
@@ -74,8 +82,9 @@ esperado (`// ESPERADO: ok`, `// ESPERADO: error lexico linea 4`). El índice co
 | Corpus de pruebas | P1 | Listo |
 | AST mínimo y convertidor de tokens a AST | P2 | Listo |
 | Semántico: tabla de símbolos y ámbitos | P3 | Listo |
-| Semántico: reglas de tipos | P4 | Pendiente |
-| Ejecutor de pruebas y video | P5 | Pendiente |
+| Semántico: reglas de tipos | P4 | Listo |
+| Ejecutor de pruebas y README | P5 | Listo |
+| Video de la Fase 1 y entrega | P5 | Pendiente |
 
 (Actualizar esta tabla al unir cada módulo a `main`: Pendiente, En curso, Listo.)
 
